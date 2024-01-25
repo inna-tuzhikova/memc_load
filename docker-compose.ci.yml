@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  web_server_lint_test:
+    build:
+        context: .
+        dockerfile: Dockerfile.ci
+    ports:
+      - "8000:80"

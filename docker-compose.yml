@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  memc_load:
+    container_name: "memc_load"
+    image: memc_load
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      IDFA_URL: "memcached_idfa:11211"
+      GAID_URL: "memcached_gaid:11211"
+      ADID_URL: "memcached_adid:11211"
+      DVID_URL: "memcached_dvid:11211"
+    volumes:
+        - .:/app
+  memcached_idfa:
+      image: memcached:latest
+      container_name: memcached_idfa
+      ports:
+          - "11212:11211"
+  memcached_gaid:
+      image: memcached:latest
+      container_name: memcached_gaid
+      ports:
+          - "11213:11211"
+  memcached_adid:
+      image: memcached:latest
+      container_name: memcached_adid
+      ports:
+          - "11214:11211"
+  memcached_dvid:
+      image: memcached:latest
+      container_name: memcached_dvid
+      ports:
+          - "11215:11211"

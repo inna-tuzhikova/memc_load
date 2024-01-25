@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 import os
 import gzip
-import sys
 import glob
 import logging
 import collections
-from optparse import OptionParser
 # brew install protobuf
 # protoc  --python_out=. ./appsinstalled.proto
 # pip install protobuf
-import appsinstalled_pb2
+from loader import appsinstalled_pb2
 # pip install python-memcached
 import memcache
 
@@ -39,7 +37,7 @@ def insert_appsinstalled(memc_addr, appsinstalled, dry_run=False):
         else:
             memc = memcache.Client([memc_addr])
             memc.set(key, packed)
-    except Exception, e:
+    except Exception as e:
         logging.exception("Cannot write to memc %s: %s" % (memc_addr, e))
         return False
     return True
@@ -122,27 +120,27 @@ def prototest():
         unpacked.ParseFromString(packed)
         assert ua == unpacked
 
-
-if __name__ == '__main__':
-    op = OptionParser()
-    op.add_option("-t", "--test", action="store_true", default=False)
-    op.add_option("-l", "--log", action="store", default=None)
-    op.add_option("--dry", action="store_true", default=False)
-    op.add_option("--pattern", action="store", default="/data/appsinstalled/*.tsv.gz")
-    op.add_option("--idfa", action="store", default="127.0.0.1:33013")
-    op.add_option("--gaid", action="store", default="127.0.0.1:33014")
-    op.add_option("--adid", action="store", default="127.0.0.1:33015")
-    op.add_option("--dvid", action="store", default="127.0.0.1:33016")
-    (opts, args) = op.parse_args()
-    logging.basicConfig(filename=opts.log, level=logging.INFO if not opts.dry else logging.DEBUG,
-                        format='[%(asctime)s] %(levelname).1s %(message)s', datefmt='%Y.%m.%d %H:%M:%S')
-    if opts.test:
-        prototest()
-        sys.exit(0)
-
-    logging.info("Memc loader started with options: %s" % opts)
-    try:
-        main(opts)
-    except Exception, e:
-        logging.exception("Unexpected error: %s" % e)
-        sys.exit(1)
+#
+# if __name__ == '__main__':
+#     op = OptionParser()
+#     op.add_option("-t", "--test", action="store_true", default=False)
+#     op.add_option("-l", "--log", action="store", default=None)
+#     op.add_option("--dry", action="store_true", default=False)
+#     op.add_option("--pattern", action="store", default="/data/appsinstalled/*.tsv.gz")
+#     op.add_option("--idfa", action="store", default="127.0.0.1:33013")
+#     op.add_option("--gaid", action="store", default="127.0.0.1:33014")
+#     op.add_option("--adid", action="store", default="127.0.0.1:33015")
+#     op.add_option("--dvid", action="store", default="127.0.0.1:33016")
+#     (opts, args) = op.parse_args()
+#     logging.basicConfig(filename=opts.log, level=logging.INFO if not opts.dry else logging.DEBUG,
+#                         format='[%(asctime)s] %(levelname).1s %(message)s', datefmt='%Y.%m.%d %H:%M:%S')
+#     if opts.test:
+#         prototest()
+#         sys.exit(0)
+#
+#     logging.info("Memc loader started with options: %s" % opts)
+#     try:
+#         main(opts)
+#     except Exception, e:
+#         logging.exception("Unexpected error: %s" % e)
+#         sys.exit(1)
