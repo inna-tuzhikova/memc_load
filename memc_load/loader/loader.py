@@ -1,14 +1,12 @@
-from collections import namedtuple
 import gzip
 import logging
+from collections import namedtuple
 from multiprocessing import Pool
 from pathlib import Path
 
 import memcache
 from loader import appsinstalled_pb2
-
 from loader.util import dot_rename
-
 
 logger = logging.getLogger(__name__)
 AppsInstalled = namedtuple(

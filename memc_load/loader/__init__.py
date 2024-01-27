@@ -4,8 +4,8 @@ import sys
 import time
 from pathlib import Path
 
-from loader.logger import init_logging
 from loader.loader import MemcLoader
+from loader.logger import init_logging
 
 
 def run_loader(
@@ -30,15 +30,6 @@ def run_loader(
     memc_loader = MemcLoader(device_memc)
     try:
         memc_loader.load(logs)
-        # memc_loader.load()  # 6.212 sec
-
-        # memc_loader.load_pp_proc_fn()  # 1.897 sec
-        # memc_loader.load_pp_proc_fn_tpe()  # 2.557 sec
-        # memc_loader.load_pp_proc_fn_t()  # 7.786 sec
-
-        # memc_loader.load_ppe_proc_fn()  # 1.942 sec
-        # memc_loader.load_ppe_proc_fn_tpe()  # 2.580 sec
-        # memc_loader.load_ppe_proc_fn_t()  # 8.815 sec
     except Exception as e:
         info_logger.exception('Unexpected error: %s', e)
         sys.exit(1)

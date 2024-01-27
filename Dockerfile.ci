@@ -44,9 +44,7 @@ COPY . .
 
 # 'lint_test' stage runs flake8, isort and app tests
 FROM dev AS lint_test
-RUN flake8 --count --show-source --statistics web_server
-RUN isort --check-only web_server
+RUN flake8 --count --show-source --statistics memc_load
+RUN isort --check-only memc_load
 
-CMD ["sh", "-c", "python /app/web_server/httpd.py \
-localhost 80 -w 5 -r /app/tests/e2e > /dev/null & \
-python -m unittest /app/tests/e2e/httptest.py"]
+CMD ["sh", "-c", "pytest tests"]

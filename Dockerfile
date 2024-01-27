@@ -43,7 +43,7 @@ WORKDIR /app
 COPY . .
 
 CMD ["sh", "-c", "python /app/memc_load/main.py \
---pattern /app/data/*.tsv.gz \
+--pattern '/app/data/test_*.tsv.gz' \
 --idfa $IDFA_URL \
 --gaid $GAID_URL \
 --adid $ADID_URL \
