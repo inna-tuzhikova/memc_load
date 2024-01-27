@@ -24,6 +24,7 @@ class MemcLoader:
         self._memc_clients = None
 
     def load(self, logs: list[Path]) -> None:
+        """Uploads files to Memcached with parallel processes"""
         with Pool() as pool:
             for path in pool.imap(self._load_file, sorted(logs)):
                 dot_rename(path)

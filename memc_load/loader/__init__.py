@@ -17,6 +17,7 @@ def run_loader(
     adid: str,
     dvid: str
 ) -> None:
+    """Runs Memcache loader with files based on pattern"""
     init_logging(log, dry)
     info_logger = logging.getLogger(__name__)
     info_logger.info(
