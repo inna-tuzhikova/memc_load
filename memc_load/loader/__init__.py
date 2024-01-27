@@ -16,7 +16,7 @@ def run_loader(
     gaid: str,
     adid: str,
     dvid: str
-):
+) -> None:
     init_logging(log, dry)
     info_logger = logging.getLogger(__name__)
     info_logger.info(

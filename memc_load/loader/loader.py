@@ -29,7 +29,7 @@ class MemcLoader:
                 dot_rename(path)
                 logger.info('Renamed %s', path.name)
 
-    def _load_file(self, path: Path):
+    def _load_file(self, path: Path) -> None:
         self._prep_clients()
         processed = 0
         errors = 0
@@ -72,7 +72,7 @@ class MemcLoader:
         gzipped_log.close()
         return path
 
-    def _parse_appsinstalled(self, line):
+    def _parse_appsinstalled(self, line: str) -> AppsInstalled | None:
         line_parts = line.strip().split('\t')
         if len(line_parts) < 5:
             return
@@ -90,7 +90,11 @@ class MemcLoader:
             logging.info('Invalid geo coordinates: `%s`', line)
         return AppsInstalled(dev_type, dev_id, lat, lon, apps)
 
-    def _insert_appsinstalled(self, client: memcache.Client, appsinstalled):
+    def _insert_appsinstalled(
+        self,
+        client: memcache.Client,
+        appsinstalled: AppsInstalled
+    ) -> bool:
         success = False
         ua = appsinstalled_pb2.UserApps()
         try:
@@ -112,7 +116,7 @@ class MemcLoader:
             return success
         return success
 
-    def _prep_clients(self):
+    def _prep_clients(self) -> None:
         self._memc_clients = {
             k: memcache.Client([v], socket_timeout=5)
             for k, v in self._device_memc.items()

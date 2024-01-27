@@ -1,7 +1,16 @@
+from pathlib import Path
+
+from memcache import Client
+
 from memc_load.loader import appsinstalled_pb2
+from memc_load.loader.loader import MemcLoader
 
 
-def test_idfa_key(memcached_clients, loader, test_log):
+def test_idfa_key(
+    memcached_clients: dict[str, Client],
+    loader: MemcLoader,
+    test_log: Path
+):
     loader.load([test_log])
     client = memcached_clients['idfa']
     res = client.get_stats('items')
@@ -10,35 +19,54 @@ def test_idfa_key(memcached_clients, loader, test_log):
     assert cached is not None
 
 
-def test_gaid_key(memcached_clients, loader, test_log):
+def test_gaid_key(
+    memcached_clients: dict[str, Client],
+    loader: MemcLoader,
+    test_log: Path
+):
     loader.load([test_log])
     client = memcached_clients['gaid']
     cached = client.get('gaid:3261cf44cbe6a00839c574336fdf49f6')
     assert cached is not None
 
 
-def test_adid_key(memcached_clients, loader, test_log):
+def test_adid_key(
+    memcached_clients: dict[str, Client],
+    loader: MemcLoader,
+    test_log: Path
+):
     loader.load([test_log])
     client = memcached_clients['adid']
     cached = client.get('adid:ca468fbb41ae6bd0b75fde1246a89bd1')
     assert cached is not None
 
 
-def test_dvid_key(memcached_clients, loader, test_log):
+def test_dvid_key(
+    memcached_clients: dict[str, Client],
+    loader: MemcLoader,
+    test_log: Path
+):
     loader.load([test_log])
     client = memcached_clients['dvid']
     cached = client.get('dvid:94584df26efb6afd43b30609328f3d75')
     assert cached is not None
 
 
-def test_log_renamed(loader, test_log):
+def test_log_renamed(
+    loader: MemcLoader,
+    test_log: Path
+):
     loader.load([test_log])
     assert not test_log.is_file()
     renamed = test_log.with_name('.' + test_log.name)
     assert renamed.is_file()
 
 
-def test_serialization(memcached_clients, loader, test_log):
+def test_serialization(
+    memcached_clients: dict[str, Client],
+    loader: MemcLoader,
+    test_log: Path
+):
     loader.load([test_log])
     client = memcached_clients['dvid']
     cached = client.get('dvid:94584df26efb6afd43b30609328f3d75')
@@ -53,28 +81,44 @@ def test_serialization(memcached_clients, loader, test_log):
     ]
 
 
-def test_invalid_log_format(memcached_clients, loader, invalid_fmt):
+def test_invalid_log_format(
+    memcached_clients: dict[str, Client],
+    loader: MemcLoader,
+    invalid_fmt: Path
+):
     loader.load([invalid_fmt])
     client = memcached_clients['idfa']
     cached = client.get('idfa:e7e1a50c0ec2747ca56cd9e1558c0d7c')
     assert cached is None
 
 
-def test_invalid_latitude(memcached_clients, loader, invalid_latitude):
+def test_invalid_latitude(
+    memcached_clients: dict[str, Client],
+    loader: MemcLoader,
+    invalid_latitude: Path
+):
     loader.load([invalid_latitude])
     client = memcached_clients['idfa']
     cached = client.get('idfa:e7e1a50c0ec2747ca56cd9e1558c0d7c')
     assert cached is None
 
 
-def test_invalid_longitude(memcached_clients, loader, invalid_longitude):
+def test_invalid_longitude(
+    memcached_clients: dict[str, Client],
+    loader: MemcLoader,
+    invalid_longitude: Path
+):
     loader.load([invalid_longitude])
     client = memcached_clients['idfa']
     cached = client.get('idfa:e7e1a50c0ec2747ca56cd9e1558c0d7c')
     assert cached is None
 
 
-def test_invalid_apps(memcached_clients, loader, invalid_apps):
+def test_invalid_apps(
+    memcached_clients: dict[str, Client],
+    loader: MemcLoader,
+    invalid_apps: Path
+):
     loader.load([invalid_apps])
     client = memcached_clients['idfa']
     cached = client.get('idfa:e7e1a50c0ec2747ca56cd9e1558c0d7c')

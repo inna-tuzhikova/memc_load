@@ -3,7 +3,7 @@ from optparse import OptionParser
 from memc_load.loader import run_loader
 
 
-def main():
+def main() -> None:
     parser = OptionParser(
         description='Parses gzip logs and loads it to memcache',
         prog='Memc Load'
