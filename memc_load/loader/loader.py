@@ -1,7 +1,8 @@
 from collections import namedtuple
-import glob
 import gzip
 import logging
+from multiprocessing import Pool
+from pathlib import Path
 
 import memcache
 from loader import appsinstalled_pb2
@@ -19,53 +20,60 @@ AppsInstalled = namedtuple(
 class MemcLoader:
     _NORMAL_ERR_RATE = 0.01
 
-    def __init__(self, pattern: str, device_memc: dict[str, str]):
-        self._pattern = pattern
+    def __init__(self, device_memc: dict[str, str]):
         self._device_memc = device_memc
+        self._memc_clients = None
 
-    def load(self):
-        for fn in sorted(glob.glob(self._pattern)):
-            processed = 0
-            errors = 0
-            logger.info('Processing %s', fn)
-            gzipped_log = gzip.open(fn, 'rt')
-            for idx, line in enumerate(gzipped_log):
-                line = line.strip()
-                if not line:
-                    continue
-                appsinstalled = self._parse_appsinstalled(line)
-                if not appsinstalled:
-                    errors += 1
-                    continue
-                memc_addr = self._device_memc.get(appsinstalled.dev_type)
-                if not memc_addr:
-                    errors += 1
-                    logger.error(
-                        'Unknown device type: %s',
-                        appsinstalled.dev_type
-                    )
-                    continue
+    def load(self, logs: list[Path]) -> None:
+        with Pool() as pool:
+            pool.map(self._load_file, sorted(logs))
 
-                ok = self._insert_appsinstalled(memc_addr, appsinstalled)
-                if ok:
-                    processed += 1
-                else:
-                    errors += 1
-            if not processed:
-                gzipped_log.close()
-                dot_rename(fn)
+    def _load_file(self, path: Path):
+        self._prep_clients()
+        processed = 0
+        errors = 0
+        logger.info('Processing %s', path)
+        gzipped_log = gzip.open(path, 'rt')
+        for idx, line in enumerate(gzipped_log):
+            line = line.strip()
+            if not line:
+                continue
+            appsinstalled = self._parse_appsinstalled(line)
+            if not appsinstalled:
+                errors += 1
+                continue
+            client = self._memc_clients.get(appsinstalled.dev_type)
+            if not client:
+                errors += 1
+                logger.error(
+                    'Unknown device type: %s',
+                    appsinstalled.dev_type
+                )
                 continue
 
-            err_rate = float(errors) / processed
-            if err_rate < self._NORMAL_ERR_RATE:
-                logger.info('Success: acceptable error rate (%s).', err_rate)
+            ok = self._insert_appsinstalled(client, appsinstalled)
+            if ok:
+                processed += 1
             else:
-                logger.error(
-                    'Fail: high error rate (%s > %s).',
-                    err_rate, self._NORMAL_ERR_RATE
-                )
+                errors += 1
+        if not processed:
             gzipped_log.close()
-            dot_rename(fn)
+            dot_rename(path)
+            return
+
+        err_rate = float(errors) / processed
+        if err_rate < self._NORMAL_ERR_RATE:
+            logger.info(
+                'Success %s: acceptable error rate (%s).',
+                path.name, err_rate
+            )
+        else:
+            logger.error(
+                'Fail %s: high error rate (%s > %s).',
+                path, err_rate, self._NORMAL_ERR_RATE
+            )
+        gzipped_log.close()
+        dot_rename(path)
 
     def _parse_appsinstalled(self, line):
         line_parts = line.strip().split('\t')
@@ -85,23 +93,27 @@ class MemcLoader:
             logging.info('Invalid geo coordinates: `%s`', line)
         return AppsInstalled(dev_type, dev_id, lat, lon, apps)
 
-    def _insert_appsinstalled(self, memc_addr, appsinstalled):
+    def _insert_appsinstalled(self, client: memcache.Client, appsinstalled):
+        success = False
         ua = appsinstalled_pb2.UserApps()
         ua.lat = appsinstalled.lat
         ua.lon = appsinstalled.lon
         key = '%s:%s' % (appsinstalled.dev_type, appsinstalled.dev_id)
         ua.apps.extend(appsinstalled.apps)
         packed = ua.SerializeToString()
-        # @TODO persistent connection
-        # @TODO retry and timeouts!
         try:
             logging.debug(
-                '%s - %s -> %s',
-                memc_addr, key, str(ua).replace('\n', ' ')
+                '%s -> %s -> %s',
+                client.servers[0].address, key, str(ua).replace('\n', ' ')
             )
-            memc = memcache.Client([memc_addr])
-            memc.set(key, packed)
+            success = client.set(key, packed)
         except Exception as e:
-            logging.exception('Cannot write to memc %s: %s', memc_addr, e)
-            return False
-        return True
+            logging.exception('Cannot write to memc %s', e)
+            return success
+        return success
+
+    def _prep_clients(self):
+        self._memc_clients = {
+            k: memcache.Client([v], socket_timeout=5)
+            for k, v in self._device_memc.items()
+        }

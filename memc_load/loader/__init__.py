@@ -1,3 +1,4 @@
+import glob
 import logging
 import sys
 import time
@@ -24,10 +25,20 @@ def run_loader(
         log, dry, pattern, idfa, gaid, adid, dvid
     )
     device_memc = dict(idfa=idfa, gaid=gaid, adid=adid, dvid=dvid)
+    logs = list(Path(p) for p in glob.glob(pattern))
     begin = time.time()
-    memc_loader = MemcLoader(pattern, device_memc)
+    memc_loader = MemcLoader(device_memc)
     try:
-        memc_loader.load()
+        memc_loader.load(logs)
+        # memc_loader.load()  # 6.212 sec
+
+        # memc_loader.load_pp_proc_fn()  # 1.897 sec
+        # memc_loader.load_pp_proc_fn_tpe()  # 2.557 sec
+        # memc_loader.load_pp_proc_fn_t()  # 7.786 sec
+
+        # memc_loader.load_ppe_proc_fn()  # 1.942 sec
+        # memc_loader.load_ppe_proc_fn_tpe()  # 2.580 sec
+        # memc_loader.load_ppe_proc_fn_t()  # 8.815 sec
     except Exception as e:
         info_logger.exception('Unexpected error: %s', e)
         sys.exit(1)
