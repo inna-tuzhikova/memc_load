@@ -63,15 +63,15 @@ def test_invalid_log_format(memcached_clients, loader, invalid_fmt):
 def test_invalid_latitude(memcached_clients, loader, invalid_latitude):
     loader.load([invalid_latitude])
     client = memcached_clients['idfa']
-    result = client.get_stats('items')
-    assert len(result[0][1]) == 0
+    cached = client.get('idfa:e7e1a50c0ec2747ca56cd9e1558c0d7c')
+    assert cached is None
 
 
 def test_invalid_longitude(memcached_clients, loader, invalid_longitude):
     loader.load([invalid_longitude])
     client = memcached_clients['idfa']
-    result = client.get_stats('items')
-    assert len(result[0][1]) == 0
+    cached = client.get('idfa:e7e1a50c0ec2747ca56cd9e1558c0d7c')
+    assert cached is None
 
 
 def test_invalid_apps(memcached_clients, loader, invalid_apps):
