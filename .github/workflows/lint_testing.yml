@@ -17,4 +17,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build docker images
-      run: docker-compose up --build
+      run: docker-compose build
+
+    - name: Run linters and tests
+      run: docker-compose run memc_load_lint_test

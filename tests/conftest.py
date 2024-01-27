@@ -61,9 +61,9 @@ def get_tmp_test_file_by_name(filename: str):
 def memcached_urls() -> dict[str, str]:
     return dict(
         idfa='memcached_idfa:11211',
-        gaid='memcached_idfa:11211',
-        adid='memcached_idfa:11211',
-        dvid='memcached_idfa:11211',
+        gaid='memcached_gaid:11211',
+        adid='memcached_adid:11211',
+        dvid='memcached_dvid:11211',
     )
 
 
