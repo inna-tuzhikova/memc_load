@@ -2,6 +2,8 @@ from memc_load.loader import appsinstalled_pb2
 
 
 def test_idfa_key(memcached_clients, loader, test_log):
+    assert test_log.exists()
+    assert test_log.stat().st_size > 0
     loader.load([test_log])
     client = memcached_clients['idfa']
     cached = client.get('idfa:e7e1a50c0ec2747ca56cd9e1558c0d7c')
