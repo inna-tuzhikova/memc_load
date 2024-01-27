@@ -5,8 +5,9 @@ from multiprocessing import Pool
 from pathlib import Path
 
 import memcache
-from loader import appsinstalled_pb2
-from loader.util import dot_rename
+
+from memc_load.loader import appsinstalled_pb2
+from memc_load.loader.util import dot_rename
 
 logger = logging.getLogger(__name__)
 AppsInstalled = namedtuple(
@@ -81,7 +82,7 @@ class MemcLoader:
         try:
             apps = [int(a.strip()) for a in raw_apps.split(',')]
         except ValueError:
-            apps = [int(a.strip()) for a in raw_apps.split(',') if a.isidigit()]
+            apps = [int(a.strip()) for a in raw_apps.split(',') if a.isdigit()]
             logging.info('Not all user apps are digits: `%s`', line)
         try:
             lat, lon = float(lat), float(lon)
@@ -92,10 +93,13 @@ class MemcLoader:
     def _insert_appsinstalled(self, client: memcache.Client, appsinstalled):
         success = False
         ua = appsinstalled_pb2.UserApps()
-        ua.lat = appsinstalled.lat
-        ua.lon = appsinstalled.lon
+        try:
+            ua.lat = appsinstalled.lat
+            ua.lon = appsinstalled.lon
+            ua.apps.extend(appsinstalled.apps)
+        except TypeError:
+            return success
         key = '%s:%s' % (appsinstalled.dev_type, appsinstalled.dev_id)
-        ua.apps.extend(appsinstalled.apps)
         packed = ua.SerializeToString()
         try:
             logging.debug(

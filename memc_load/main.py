@@ -1,6 +1,6 @@
 from optparse import OptionParser
 
-from loader import run_loader
+from memc_load.loader import run_loader
 
 
 def main():
@@ -8,7 +8,6 @@ def main():
         description='Parses gzip logs and loads it to memcache',
         prog='Memc Load'
     )
-    parser.add_option('-t', '--test', action='store_true', default=False)
     parser.add_option('-l', '--log', action='store', default=None,
                       help='Path to save logs. If not specified stdout is used')
     parser.add_option('--dry', action='store_true', default=False,

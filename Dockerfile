@@ -42,8 +42,9 @@ RUN poetry install --only dev
 WORKDIR /app
 COPY . .
 
-CMD ["sh", "-c", "python /app/memc_load/main.py \
---pattern '/app/data/test_*.tsv.gz' \
+CMD ["sh", "-c", "export PYTHONPATH=${PYTHONPATH}:/app/ && \
+python /app/memc_load/main.py \
+--pattern '/app/data/test.tsv.gz' \
 --idfa $IDFA_URL \
 --gaid $GAID_URL \
 --adid $ADID_URL \

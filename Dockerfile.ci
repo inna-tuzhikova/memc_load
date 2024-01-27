@@ -44,7 +44,7 @@ COPY . .
 
 # 'lint_test' stage runs flake8, isort and app tests
 FROM dev AS lint_test
-RUN flake8 --count --show-source --statistics memc_load
-RUN isort --check-only memc_load
+RUN flake8 --count --show-source --statistics memc_load tests
+RUN isort --check-only memc_load tests
 
-CMD ["sh", "-c", "pytest tests"]
+CMD ["sh", "-c", "pytest tests -v"]

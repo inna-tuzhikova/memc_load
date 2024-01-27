@@ -4,8 +4,8 @@ import sys
 import time
 from pathlib import Path
 
-from loader.loader import MemcLoader
-from loader.logger import init_logging
+from memc_load.loader.loader import MemcLoader
+from memc_load.loader.logger import init_logging
 
 
 def run_loader(
