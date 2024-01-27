@@ -26,7 +26,9 @@ class MemcLoader:
 
     def load(self, logs: list[Path]) -> None:
         with Pool() as pool:
-            pool.map(self._load_file, sorted(logs))
+            for path in pool.imap(self._load_file, sorted(logs)):
+                dot_rename(path)
+                logger.info('Renamed %s', path.name)
 
     def _load_file(self, path: Path):
         self._prep_clients()
@@ -51,29 +53,25 @@ class MemcLoader:
                 )
                 continue
 
-            ok = self._insert_appsinstalled(client, appsinstalled)
-            if ok:
+            success = self._insert_appsinstalled(client, appsinstalled)
+            if success:
                 processed += 1
             else:
                 errors += 1
-        if not processed:
-            gzipped_log.close()
-            dot_rename(path)
-            return
-
-        err_rate = float(errors) / processed
-        if err_rate < self._NORMAL_ERR_RATE:
-            logger.info(
-                'Success %s: acceptable error rate (%s).',
-                path.name, err_rate
-            )
-        else:
-            logger.error(
-                'Fail %s: high error rate (%s > %s).',
-                path, err_rate, self._NORMAL_ERR_RATE
-            )
+        if processed:
+            err_rate = float(errors) / processed
+            if err_rate < self._NORMAL_ERR_RATE:
+                logger.info(
+                    'Success %s: acceptable error rate (%s).',
+                    path.name, err_rate
+                )
+            else:
+                logger.error(
+                    'Fail %s: high error rate (%s > %s).',
+                    path, err_rate, self._NORMAL_ERR_RATE
+                )
         gzipped_log.close()
-        dot_rename(path)
+        return path
 
     def _parse_appsinstalled(self, line):
         line_parts = line.strip().split('\t')
@@ -106,7 +104,7 @@ class MemcLoader:
                 '%s -> %s -> %s',
                 client.servers[0].address, key, str(ua).replace('\n', ' ')
             )
-            success = client.set(key, packed)
+            success = bool(client.set(key, packed))
         except Exception as e:
             logging.exception('Cannot write to memc %s', e)
             return success
