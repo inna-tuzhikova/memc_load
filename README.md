@@ -1,12 +1,9 @@
 # Homework #9 (OTUS. Python Developer. Professional)
 
-Concurrent loading of logs into memcache
+Concurrent loading of logs into memcached
 
 ## Run dev
-TODO
-
-## Run prod
-TODO
+`docker-compose up --build`
 
 ## Run tests and linters
-TODO
+`docker-compose -f docker-compose.ci.yml up --build`

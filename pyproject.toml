@@ -5,10 +5,11 @@ description = "OTUS Homework #9. Memc Load"
 authors = ["inna-tuzhikova <inna-tuzhikova@github.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "memc_load"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+python-memcached = "^1.62"
+protobuf = "^4.25.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -28,7 +29,9 @@ multi_line_output = 3
 include_trailing_comma = true
 use_parentheses = true
 ensure_newline_before_comments = true
+skip = ["memc_load/loader/appsinstalled_pb2.py"]
 
 [tool.flake8]
 ignore = ["W503", "F811", "E722"]
 max-line-length = 80
+exclude = ["memc_load/loader/appsinstalled_pb2.py"]
